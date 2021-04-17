@@ -215,34 +215,5 @@ function createFile(repoName, topicName, details) {
     pdfDoc.pipe(fs.createWriteStream(filePath));
     pdfDoc.text(JSON.stringify(details));
     pdfDoc.end();
-
-    let filePath2 = path.join(__dirname,repoName + ".xlsx");
-    if (!fs.existsSync(filePath2)) {
-        return [];
-    } else {
-        // workbook => excel
-        let wt = xlsx.readFile(filePath2);
-        // csk -> msd
-        // get data from workbook
-        let excelData = wt.Sheets[repoName];
-        // convert excel format to json => array of obj
-        let ans = xlsx.utils.sheet_to_json(excelData);
-        // console.log(ans);
-        return ans;
-    }
-
-}
-
-function excelWriter(filePath, json, name) {
-    // console.log(xlsx.readFile(filePath));
-    let newWB = xlsx.utils.book_new();
-    // console.log(json);
-    let newWS = xlsx.utils.json_to_sheet(json);
-    // msd.xlsx-> msd
-    //workbook name as param
-    xlsx.utils.book_append_sheet(newWB, newWS, name);
-    //   file => create , replace
-    //    replace
-    xlsx.writeFile(newWB, filePath);
 }
 
