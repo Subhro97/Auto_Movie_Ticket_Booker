@@ -12,11 +12,14 @@ let PDFDocument = require('pdfkit');
         });
         let details = await movieTicketBooker(browserInstance);
 
-        let newObj={};
-        for(let i=0;i<details.length;i++){
-            for(let keys in details[i]){
-                newObj[keys]=details[i][keys];
-                
+        dirCreater("Movie_Details");
+        createFile("Movie", "Movie_Details", details);
+
+        let newObj = {};
+        for (let i = 0; i < details.length; i++) {
+            for (let keys in details[i]) {
+                newObj[keys] = details[i][keys];
+
             }
         }
         console.table(newObj);
@@ -29,7 +32,8 @@ let PDFDocument = require('pdfkit');
 
 async function movieTicketBooker(browserInstance) {
 
-    let newPage = await browserInstance.newPage();
+    let context = await browserInstance.createIncognitoBrowserContext();
+    let newPage = await context.newPage();
     await newPage.goto("https://in.bookmyshow.com/explore/home");
 
     await newPage.waitForSelector("button#wzrk-cancel", { visible: true });
@@ -66,7 +70,7 @@ async function movieTicketBooker(browserInstance) {
     await newPage.evaluate(movieSeatsFn, "3");
     await newPage.click("#proceed-Qty");
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(seatSelectorFn, "L", "20");
+    await newPage.evaluate(seatSelectorFn, "L", "18");
     await newPage.waitForTimeout(2000);
     await newPage.click("#btmcntbook");
     await newPage.waitForTimeout(3000);
@@ -75,7 +79,10 @@ async function movieTicketBooker(browserInstance) {
 
     await screenshotDOMElement(newPage, ".order-summarywrap", 16);
     let ndetails = await newPage.evaluate(lastFn, details);
-    //await newPage.close();
+    await newPage.waitForTimeout(4000);
+    await newPage.close();
+    await newPage.waitForTimeout(2000);
+    await browserInstance.close();
     return ndetails;
 
 
@@ -216,4 +223,5 @@ function createFile(repoName, topicName, details) {
     pdfDoc.text(JSON.stringify(details));
     pdfDoc.end();
 }
+
 
