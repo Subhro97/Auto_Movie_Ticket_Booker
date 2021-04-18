@@ -145,8 +145,8 @@ function seatSelectorFn(seatrow, seatno) {
             if (seatno - 1 == i) {
                 resolve(seatrowArr[i].click());
             }
-
         }
+        reject("Not Valid Seat Row")
     })
 }
 
@@ -158,6 +158,7 @@ function movieSeatsFn(seats) {
                 resolve(seatsArr[i].click());
             }
         }
+        reject("Not Valid Number of Seats!")
     })
 
 }
@@ -171,8 +172,7 @@ function movietheaterFn(showTime) {
                 resolve(showtimeArr[i].click());
             }
         }
-
-
+        reject("Not valid Show Time");
     })
 
 }
