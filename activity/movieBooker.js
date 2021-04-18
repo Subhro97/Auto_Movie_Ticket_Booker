@@ -3,7 +3,7 @@ let fs = require("fs");
 let path = require("path");
 let PDFDocument = require('pdfkit');
 
-let input=require("./input.json");
+let input = require("./input.json");
 
 (async function fn(input) {
     try {
@@ -12,7 +12,7 @@ let input=require("./input.json");
             defaultViewport: null,
             args: ["--start-maximized"]
         });
-        let details = await movieTicketBooker(browserInstance,input);
+        let details = await movieTicketBooker(browserInstance, input);
 
         dirCreater("Movie_Details");
         let newDetails = createFile("Movie", "Movie_Details", details);
@@ -26,7 +26,7 @@ let input=require("./input.json");
 
 })(input);
 
-async function movieTicketBooker(browserInstance,input) {
+async function movieTicketBooker(browserInstance, input) {
 
     let context = await browserInstance.createIncognitoBrowserContext();
     let newPage = await context.newPage();
@@ -83,7 +83,7 @@ async function movieTicketBooker(browserInstance,input) {
     await browserInstance.close();
 
     return ndetails;
-    
+
 }
 
 function lastFn(details) {
