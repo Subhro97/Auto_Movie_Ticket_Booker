@@ -13,16 +13,10 @@ let PDFDocument = require('pdfkit');
         let details = await movieTicketBooker(browserInstance);
 
         dirCreater("Movie_Details");
-        createFile("Movie", "Movie_Details", details);
 
-        let newObj = {};
-        for (let i = 0; i < details.length; i++) {
-            for (let keys in details[i]) {
-                newObj[keys] = details[i][keys];
+        let newDetails = createFile("Movie", "Movie_Details", details);
 
-            }
-        }
-        console.table(newObj);
+        console.table(newDetails);
 
     } catch (err) {
         console.log(err);
@@ -60,9 +54,9 @@ async function movieTicketBooker(browserInstance) {
 
     await newPage.evaluate(formatSelectorFn, "IMAX 2D");
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movieDateFn, "18");
+    await newPage.evaluate(movieDateFn, "20");
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movietheaterFn, "12:45 PM");
+    await newPage.evaluate(movietheaterFn, "01:45 PM");
     await newPage.waitForTimeout(2000);
     await newPage.waitForSelector("#btnPopupAccept", { visible: true });
     await newPage.click("#btnPopupAccept");
@@ -70,7 +64,7 @@ async function movieTicketBooker(browserInstance) {
     await newPage.evaluate(movieSeatsFn, "3");
     await newPage.click("#proceed-Qty");
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(seatSelectorFn, "L", "18");
+    await newPage.evaluate(seatSelectorFn, "L", "10");
     await newPage.waitForTimeout(2000);
     await newPage.click("#btmcntbook");
     await newPage.waitForTimeout(3000);
@@ -93,9 +87,9 @@ function lastFn(details) {
         let ticketsArr = document.querySelectorAll("#TickQuantity");
         let totalamtArr = document.querySelectorAll("#ttPrice");
 
-        let tickets = ticketsArr[0].innerText;
-        let totalamt = totalamtArr[0].innerText;
-        details.push({ tickets, totalamt });
+        let Tickets = ticketsArr[0].innerText.split("(")[1].split(")")[0];
+        let Total_Amount = totalamtArr[0].innerText;
+        details.push({ Tickets, Total_Amount });
         resolve(details);
     })
 
@@ -106,10 +100,10 @@ function movieDoc() {
         let movieNameArr = document.querySelectorAll(".styles__EventHeading-qswwm9-6.mptsd");
         let movieDurationArr = document.querySelectorAll(".styles__EventAttributesContainer-sc-2k6tnd-1.hSMSQi");
 
-        let movieName = movieNameArr[0].innerText;
-        let movieDuration = movieDurationArr[1].innerText.split("•")[0].split("\n")[0];
+        let Movie_Name = movieNameArr[0].innerText;
+        let Movie_Duration = movieDurationArr[1].innerText.split("•")[0].split("\n")[0];
         let arr = [];
-        arr.push({ movieName, movieDuration });
+        arr.push({ Movie_Name, Movie_Duration });
         resolve(arr);
     })
 }
@@ -210,18 +204,30 @@ function dirCreater(topicName) {
     }
 }
 function createFile(repoName, topicName, details) {
+    let newObj = {};
+    for (let i = 0; i < details.length; i++) {
+        for (let keys in details[i]) {
+            newObj[keys] = details[i][keys];
+
+        }
+    }
     let pathofFile = path.join(__dirname, topicName, repoName + ".json");
     if (fs.existsSync(pathofFile) == false) {
         let createStream = fs.createWriteStream(pathofFile);
         createStream.end();
     }
-    fs.writeFileSync(pathofFile, JSON.stringify(details));
+    fs.writeFileSync(pathofFile, JSON.stringify(newObj));
 
     let filePath = path.join(__dirname, topicName, repoName + ".pdf");
     let pdfDoc = new PDFDocument;
     pdfDoc.pipe(fs.createWriteStream(filePath));
-    pdfDoc.text(JSON.stringify(details));
+    for (let keys in newObj) {
+        pdfDoc.text(keys + ":" + newObj[keys]);
+        pdfDoc.moveDown();
+    }
     pdfDoc.end();
+
+    return newObj;
 }
 
 
