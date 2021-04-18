@@ -1,9 +1,10 @@
+// Modules used
 let puppeteer = require("puppeteer");
 let fs = require("fs");
 let path = require("path");
 let PDFDocument = require('pdfkit');
 
-let input = require("./input.json");
+let input = require("./input.json"); //Input 
 
 (async function fn(input) {
     try {
@@ -26,7 +27,7 @@ let input = require("./input.json");
 
 })(input);
 
-async function movieTicketBooker(browserInstance, input) {
+async function movieTicketBooker(browserInstance, input) {                  
 
     let context = await browserInstance.createIncognitoBrowserContext();
     let newPage = await context.newPage();
@@ -86,6 +87,7 @@ async function movieTicketBooker(browserInstance, input) {
 
 }
 
+//To fetch ticket details
 function lastFn(details) {
     return new Promise(function (resolve, reject) {
         let ticketsArr = document.querySelectorAll("#TickQuantity");
@@ -99,6 +101,7 @@ function lastFn(details) {
 
 }
 
+//To fetch movie details
 function movieDoc() {
     return new Promise(function (resolve, reject) {
         let movieNameArr = document.querySelectorAll(".styles__EventHeading-qswwm9-6.mptsd");
@@ -112,6 +115,7 @@ function movieDoc() {
     })
 }
 
+//For taking screenshot
 async function screenshotDOMElement(page, selector, padding = 0) {
     const rect = await page.evaluate(selector => {
         const element = document.querySelector(selector);
@@ -130,7 +134,7 @@ async function screenshotDOMElement(page, selector, padding = 0) {
     });
 }
 
-
+//To click the button against Internet Handling charges
 function lastClickFn() {
     return new Promise(function (resolve, reject) {
         let clickArr = document.querySelectorAll(".__up-icon.up-icon-tax");
@@ -138,6 +142,7 @@ function lastClickFn() {
     })
 }
 
+//To select the seats
 function seatSelectorFn(seatrow, seatno) {
     return new Promise(function (resolve, reject) {
         let seatrowArr = document.querySelectorAll("tbody tr td.SRow1 ._available");
@@ -163,7 +168,7 @@ function movieSeatsFn(seats) {
 
 }
 
-
+// To select showTime
 function movietheaterFn(showTime) {
     return new Promise(function (resolve, reject) {
         let showtimeArr = document.querySelectorAll(".__details .__text");
@@ -177,6 +182,7 @@ function movietheaterFn(showTime) {
 
 }
 
+//To select movie date
 function movieDateFn(movieDate) {
     return new Promise(function (resolve, reject) {
         let movieDateArr = document.querySelectorAll(".date-numeric");
@@ -189,6 +195,7 @@ function movieDateFn(movieDate) {
     })
 }
 
+//To select movie format
 function formatSelectorFn(formatName) {
     return new Promise(function (resolve, reject) {
         let movieFormatArr = document.querySelectorAll(".styles__DimensionComponent-vhz3gb-3.ejeujv span");
@@ -201,12 +208,14 @@ function formatSelectorFn(formatName) {
     })
 }
 
+//To create Movie_Details directory
 function dirCreater(topicName) {
     let pathOfFolder = path.join(__dirname, topicName);
     if (fs.existsSync(pathOfFolder) == false) {
         fs.mkdirSync(pathOfFolder);
     }
 }
+//To create json,PDF files in the directory
 function createFile(repoName, topicName, details) {
     let newObj = {};
     for (let i = 0; i < details.length; i++) {
