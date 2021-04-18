@@ -83,8 +83,6 @@ async function movieTicketBooker(browserInstance,input) {
     await browserInstance.close();
 
     return ndetails;
-
-
 }
 
 function lastFn(details) {
