@@ -1,9 +1,9 @@
 [{
-    "Movie": "Godzilla vs.Kong" ,
+    "Movie": "Godzilla vs. Kong" ,
     "Date": "20",
     "Seats": "2",
     "Format": "IMAX 2D",
-    "Time": "01:45",
+    "Time": "01:45 PM",
     "Seat_Row": "L",
     "Seat_No": "10"
 }]

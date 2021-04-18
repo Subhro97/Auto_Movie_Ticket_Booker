@@ -3,18 +3,20 @@ let fs = require("fs");
 let path = require("path");
 let PDFDocument = require('pdfkit');
 
-(async function fn() {
+let input=require("./input.json");
+
+(async function fn(input) {
     try {
         let browserInstance = await puppeteer.launch({
             headless: false,
             defaultViewport: null,
             args: ["--start-maximized"]
         });
-        let details = await movieTicketBooker(browserInstance);
+        let details = await movieTicketBooker(browserInstance,input);
 
         dirCreater("Movie_Details");
-
         let newDetails = createFile("Movie", "Movie_Details", details);
+
 
         console.table(newDetails);
 
@@ -22,61 +24,64 @@ let PDFDocument = require('pdfkit');
         console.log(err);
     }
 
-})();
+})(input);
 
-async function movieTicketBooker(browserInstance) {
+async function movieTicketBooker(browserInstance,input) {
 
     let context = await browserInstance.createIncognitoBrowserContext();
     let newPage = await context.newPage();
     await newPage.goto("https://in.bookmyshow.com/explore/home");
 
-    await newPage.waitForSelector("button#wzrk-cancel", { visible: true });
-    await newPage.click("button#wzrk-cancel");
-    await newPage.waitForSelector('.sc-RbTVP.fjyOHW [alt="NCR"]', { visible: true });
-    await newPage.click('.sc-RbTVP.fjyOHW [alt="NCR"]');
+    await waitNClick("button#wzrk-cancel", newPage);
+    await waitNClick('.sc-RbTVP.fjyOHW [alt="NCR"]', newPage);
 
     let url = newPage.url();
     await newPage.goto(url);
     await newPage.click(".sc-gmeYpB.MZHt");
-    await newPage.type(".sc-gmeYpB.MZHt", "Godzilla vs. Kong", { Delay: 200 });
-    await newPage.waitForSelector(".sc-ekulBa.ffzpQn", { visible: true });
-    await newPage.click(".sc-ekulBa.ffzpQn");
+    await newPage.type(".sc-gmeYpB.MZHt", input[0].Movie, { Delay: 200 });
+    await waitNClick(".sc-ekulBa.ffzpQn", newPage);
 
     let url2 = newPage.url();
     await newPage.goto(url2);
 
     let details = await newPage.evaluate(movieDoc);
 
-    await newPage.waitForSelector("#page-cta-container", { visible: true });
-    await newPage.click("#page-cta-container");
+    await waitNClick("#page-cta-container", newPage);
 
     await newPage.waitForTimeout(2000);
 
-    await newPage.evaluate(formatSelectorFn, "IMAX 2D");
+    await newPage.evaluate(formatSelectorFn, input[0].Format);
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movieDateFn, "20");
+
+    await newPage.evaluate(movieDateFn, input[0].Date);
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movietheaterFn, "01:45 PM");
+
+    await newPage.evaluate(movietheaterFn, input[0].Time);
     await newPage.waitForTimeout(2000);
-    await newPage.waitForSelector("#btnPopupAccept", { visible: true });
-    await newPage.click("#btnPopupAccept");
+
+    await waitNClick("#btnPopupAccept", newPage);
+
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movieSeatsFn, "3");
+    await newPage.evaluate(movieSeatsFn, input[0].Seats);
     await newPage.click("#proceed-Qty");
+
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(seatSelectorFn, "L", "10");
+    await newPage.evaluate(seatSelectorFn, input[0].Seat_Row, input[0].Seat_No);
     await newPage.waitForTimeout(2000);
+
     await newPage.click("#btmcntbook");
     await newPage.waitForTimeout(3000);
     await newPage.evaluate(lastClickFn);
-    await newPage.waitForTimeout(2000);
+    await newPage.waitForTimeout(4000);
 
     await screenshotDOMElement(newPage, ".order-summarywrap", 16);
     let ndetails = await newPage.evaluate(lastFn, details);
+
     await newPage.waitForTimeout(4000);
     await newPage.close();
     await newPage.waitForTimeout(2000);
     await browserInstance.close();
+
     return ndetails;
 
 
@@ -229,5 +234,11 @@ function createFile(repoName, topicName, details) {
 
     return newObj;
 }
+
+async function waitNClick(selector, newPage) {
+    await newPage.waitForSelector(selector, { visible: true });
+    return newPage.click(selector);
+}
+
 
 

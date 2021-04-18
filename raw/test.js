@@ -3,20 +3,18 @@ let fs = require("fs");
 let path = require("path");
 let PDFDocument = require('pdfkit');
 
-let input=require("./input.json");
-
-(async function fn(input) {
+(async function fn() {
     try {
         let browserInstance = await puppeteer.launch({
             headless: false,
             defaultViewport: null,
             args: ["--start-maximized"]
         });
-        let details = await movieTicketBooker(browserInstance,input);
+        let details = await movieTicketBooker(browserInstance);
 
         dirCreater("Movie_Details");
-        let newDetails = createFile("Movie", "Movie_Details", details);
 
+        let newDetails = createFile("Movie", "Movie_Details", details);
 
         console.table(newDetails);
 
@@ -24,51 +22,50 @@ let input=require("./input.json");
         console.log(err);
     }
 
-})(input);
+})();
 
-async function movieTicketBooker(browserInstance,input) {
+async function movieTicketBooker(browserInstance) {
 
     let context = await browserInstance.createIncognitoBrowserContext();
     let newPage = await context.newPage();
     await newPage.goto("https://in.bookmyshow.com/explore/home");
 
-    await waitNClick("button#wzrk-cancel", newPage);
-    await waitNClick('.sc-RbTVP.fjyOHW [alt="NCR"]', newPage);
+    await newPage.waitForSelector("button#wzrk-cancel", { visible: true });
+    await newPage.click("button#wzrk-cancel");
+    await newPage.waitForSelector('.sc-RbTVP.fjyOHW [alt="NCR"]', { visible: true });
+    await newPage.click('.sc-RbTVP.fjyOHW [alt="NCR"]');
 
     let url = newPage.url();
     await newPage.goto(url);
     await newPage.click(".sc-gmeYpB.MZHt");
-    await newPage.type(".sc-gmeYpB.MZHt", input[0].Movie, { Delay: 200 });
-    await waitNClick(".sc-ekulBa.ffzpQn", newPage);
+    await newPage.type(".sc-gmeYpB.MZHt", "Godzilla vs. Kong", { Delay: 200 });
+    await newPage.waitForSelector(".sc-ekulBa.ffzpQn", { visible: true });
+    await newPage.click(".sc-ekulBa.ffzpQn");
 
     let url2 = newPage.url();
     await newPage.goto(url2);
 
     let details = await newPage.evaluate(movieDoc);
 
-    await waitNClick("#page-cta-container", newPage);
+    await newPage.waitForSelector("#page-cta-container", { visible: true });
+    await newPage.click("#page-cta-container");
 
     await newPage.waitForTimeout(2000);
 
-    await newPage.evaluate(formatSelectorFn, input[0].Format);
+    await newPage.evaluate(formatSelectorFn, "IMAX 2D");
     await newPage.waitForTimeout(2000);
-
-    await newPage.evaluate(movieDateFn, input[0].Date);
+    await newPage.evaluate(movieDateFn, "20");
     await newPage.waitForTimeout(2000);
-
-    await newPage.evaluate(movietheaterFn, input[0].Time);
+    await newPage.evaluate(movietheaterFn, "01:45 PM");
     await newPage.waitForTimeout(2000);
-
-    await waitNClick("#btnPopupAccept", newPage);
-
+    await newPage.waitForSelector("#btnPopupAccept", { visible: true });
+    await newPage.click("#btnPopupAccept");
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(movieSeatsFn, input[0].Seats);
+    await newPage.evaluate(movieSeatsFn, "3");
     await newPage.click("#proceed-Qty");
-
     await newPage.waitForTimeout(2000);
-    await newPage.evaluate(seatSelectorFn, input[0].Seat_Row, input[0].Seat_No);
+    await newPage.evaluate(seatSelectorFn, "L", "10");
     await newPage.waitForTimeout(2000);
-
     await newPage.click("#btmcntbook");
     await newPage.waitForTimeout(3000);
     await newPage.evaluate(lastClickFn);
@@ -76,12 +73,10 @@ async function movieTicketBooker(browserInstance,input) {
 
     await screenshotDOMElement(newPage, ".order-summarywrap", 16);
     let ndetails = await newPage.evaluate(lastFn, details);
-
     await newPage.waitForTimeout(4000);
     await newPage.close();
     await newPage.waitForTimeout(2000);
     await browserInstance.close();
-
     return ndetails;
 
 
@@ -233,11 +228,6 @@ function createFile(repoName, topicName, details) {
     pdfDoc.end();
 
     return newObj;
-}
-
-async function waitNClick(selector, newPage) {
-    await newPage.waitForSelector(selector, { visible: true });
-    return newPage.click(selector);
 }
 
 
