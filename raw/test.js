@@ -18,7 +18,7 @@ let PDFDocument = require('pdfkit');
 
         console.table(newDetails);
 
-    } catch (err) {
+    }catch (err) {
         console.log(err);
     }
 
